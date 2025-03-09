@@ -3,124 +3,122 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>The Fading Relationship</title>
+    <title>Fading Relationship</title>
     <style>
         body {
-            text-align: center;
-            font-family: Arial, sans-serif;
-            background-color: #f5f5f5;
+            margin: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            background-color: #fff;
         }
         canvas {
-            background-color: #ffffff;
-            margin: 20px auto;
-            display: block;
-        }
-        .game-over {
-            color: black;
-            font-size: 36px;
-            margin-top: 20px;
+            background-color: #f0f0f0;
         }
     </style>
 </head>
 <body>
-    <h1>The Fading Relationship</h1>
     <canvas id="gameCanvas" width="800" height="600"></canvas>
-    <div id="gameOver" class="game-over"></div>
-
     <script>
-        // Canvas setup
         const canvas = document.getElementById('gameCanvas');
         const ctx = canvas.getContext('2d');
 
-        // Game variables
-        const playerWidth = 50;
-        const playerHeight = 50;
-        let playerX = canvas.width / 2 - playerWidth / 2;
-        let playerY = canvas.height - playerHeight - 10;
-        let playerSpeed = 5;
-
-        const fallingObjects = [];
-        let objectSpeed = 5;
+        const playerWidth = 50, playerHeight = 50;
+        let playerX = canvas.width / 2 - playerWidth / 2, playerY = canvas.height - playerHeight - 10;
+        const playerSpeed = 5;
         let score = 0;
+        let fallingObjects = [];
         let gameOver = false;
-
-        // Draw player
-        function drawPlayer() {
-            ctx.fillStyle = 'red';
-            ctx.fillRect(playerX, playerY, playerWidth, playerHeight);
-        }
-
-        // Draw falling objects
-        function drawFallingObjects() {
-            ctx.fillStyle = 'red';
-            fallingObjects.forEach(obj => {
-                ctx.beginPath();
-                ctx.arc(obj.x, obj.y, 15, 0, Math.PI * 2);
-                ctx.fill();
-            });
-        }
-
-        // Generate new falling objects
-        function generateNewObject() {
-            const x = Math.random() * (canvas.width - 50) + 25;
-            return { x: x, y: 0 };
-        }
 
         // Game loop
         function gameLoop() {
-            if (gameOver) return;
+            if (!gameOver) {
+                updateGame();
+                drawGame();
+                requestAnimationFrame(gameLoop);
+            } else {
+                drawGameOver();
+            }
+        }
 
-            ctx.clearRect(0, 0, canvas.width, canvas.height);
-            drawPlayer();
-            drawFallingObjects();
-            displayScore();
-
+        // Update game elements
+        function updateGame() {
             // Move falling objects
-            fallingObjects.forEach(obj => {
-                obj.y += objectSpeed;
-            });
-
-            // Check for collisions
-            fallingObjects.forEach((obj, index) => {
-                if (obj.x > playerX && obj.x < playerX + playerWidth && obj.y > playerY && obj.y < playerY + playerHeight) {
-                    fallingObjects.splice(index, 1);
+            for (let i = 0; i < fallingObjects.length; i++) {
+                fallingObjects[i].y += 5;
+                
+                // Check for collision
+                if (isCollision(fallingObjects[i])) {
+                    fallingObjects.splice(i, 1);
                     score++;
-                } else if (obj.y > canvas.height) {
-                    fallingObjects.splice(index, 1);
+                    i--;
+                }
+                // Remove out of bounds objects
+                if (fallingObjects[i].y > canvas.height) {
+                    fallingObjects.splice(i, 1);
+                    i--;
+                }
+            }
+
+            // Move player with arrow keys
+            document.addEventListener('keydown', function(e) {
+                if (e.key === "ArrowLeft" && playerX > 0) {
+                    playerX -= playerSpeed;
+                }
+                if (e.key === "ArrowRight" && playerX < canvas.width - playerWidth) {
+                    playerX += playerSpeed;
                 }
             });
 
-            // Add new objects
+            // Randomly generate new falling objects
             if (Math.random() < 0.05) {
-                fallingObjects.push(generateNewObject());
+                fallingObjects.push({
+                    x: Math.random() * (canvas.width - 30),
+                    y: 0,
+                    radius: 15
+                });
             }
 
-            // Check for game over
+            // End game condition (after certain score or time)
             if (score >= 10) {
                 gameOver = true;
-                document.getElementById('gameOver').textContent = 'Everything is slipping away...';
             }
-
-            requestAnimationFrame(gameLoop);
         }
 
-        // Display score
-        function displayScore() {
+        // Draw everything
+        function drawGame() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height); // Clear canvas
+            ctx.fillStyle = 'red';
+            ctx.fillRect(playerX, playerY, playerWidth, playerHeight); // Draw player
+
+            for (let obj of fallingObjects) {
+                ctx.beginPath();
+                ctx.arc(obj.x, obj.y, obj.radius, 0, Math.PI * 2);
+                ctx.fillStyle = 'red';
+                ctx.fill();
+            }
+
+            ctx.font = '30px Arial';
             ctx.fillStyle = 'black';
-            ctx.font = '20px Arial';
             ctx.fillText('Score: ' + score, 10, 30);
         }
 
-        // Handle keyboard events
-        window.addEventListener('keydown', (event) => {
-            if (event.key === 'ArrowLeft' && playerX > 0) {
-                playerX -= playerSpeed;
-            } else if (event.key === 'ArrowRight' && playerX < canvas.width - playerWidth) {
-                playerX += playerSpeed;
-            }
-        });
+        // Check for collision between player and falling object
+        function isCollision(object) {
+            return playerX < object.x + object.radius && playerX + playerWidth > object.x - object.radius &&
+                   playerY < object.y + object.radius && playerY + playerHeight > object.y - object.radius;
+        }
 
-        // Start game
+        // Display game over message
+        function drawGameOver() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            ctx.fillStyle = 'black';
+            ctx.font = '40px Arial';
+            ctx.fillText('Everything is slipping away...', canvas.width / 4, canvas.height / 2);
+        }
+
+        // Start the game loop
         gameLoop();
     </script>
 </body>
