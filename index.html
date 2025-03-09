@@ -11,17 +11,19 @@ pygame.display.set_caption('The Fading Relationship')
 
 # Colors
 WHITE = (255, 255, 255)
-DARK_RED = (139, 0, 0)
-LIGHT_GRAY = (211, 211, 211)
+RED = (255, 0, 0)
 BLACK = (0, 0, 0)
+DARK_RED = (139, 0, 0)
+GRAY = (169, 169, 169)
 FADING_COLOR = (150, 0, 0)
+BACKGROUND_COLOR = (0, 0, 0)
 
 # Fonts
 font = pygame.font.SysFont('Arial', 30)
 
 # Game variables
-player_width = 60
-player_height = 60
+player_width = 50
+player_height = 50
 player_x = WIDTH // 2 - player_width // 2
 player_y = HEIGHT - player_height - 10
 player_speed = 5
@@ -51,12 +53,12 @@ def generate_new_object():
 
 # Function to draw the game over screen
 def draw_game_over():
-    game_over_text = font.render('The relationship is lost...', True, LIGHT_GRAY)
+    game_over_text = font.render('The relationship is lost...', True, GRAY)
     screen.blit(game_over_text, (WIDTH // 2 - 150, HEIGHT // 2))
-    final_message = font.render('No more chances. It’s over.', True, LIGHT_GRAY)
+    final_message = font.render('No more chances. It’s over.', True, GRAY)
     screen.blit(final_message, (WIDTH // 2 - 170, HEIGHT // 2 + 40))
 
-# Function to draw the background fading effect
+# Function to draw the fading background effect
 def draw_fading_background():
     gradient = pygame.Surface((WIDTH, HEIGHT))
     for i in range(HEIGHT):
@@ -76,50 +78,50 @@ while True:
         if event.type == pygame.QUIT:
             pygame.quit()
             quit()
-    
+
     # Check for key presses
     keys = pygame.key.get_pressed()
     if keys[pygame.K_LEFT] and player_x > 0:
         player_x -= player_speed
     if keys[pygame.K_RIGHT] and player_x < WIDTH - player_width:
         player_x += player_speed
-    
+
     # Add new falling objects periodically
     if random.randint(1, 100) <= 5:
         falling_objects.append(generate_new_object())
-    
+
     # Move falling objects down
     for obj in falling_objects:
         obj[1] += object_speed
-    
+
     # Check for collisions with the player
     for obj in falling_objects[:]:
         if (obj[0] - player_x) ** 2 < (player_width // 2) ** 2 and (obj[1] - player_y) ** 2 < (player_height // 2) ** 2:
             falling_objects.remove(obj)
             score += 1
-        
+
         # Objects that fall out of screen
         if obj[1] > HEIGHT:
             falling_objects.remove(obj)
-    
+
     # Decrease the remaining time (symbolizing time running out in the relationship)
     time_left -= 0.05
-    
+
     # Draw everything
     draw_player(player_x, player_y)
     draw_falling_objects(falling_objects)
-    
+
     # Show score and time left
     score_text = font.render(f'Score: {score}', True, BLACK)
     screen.blit(score_text, (10, 10))
     
     time_text = font.render(f'Time Left: {int(time_left)}', True, BLACK)
     screen.blit(time_text, (WIDTH - 150, 10))
-    
+
     # If the player has failed to catch enough objects or time runs out, end the game
     if time_left <= 0:
         game_over = True
-    
+
     if game_over:
         draw_game_over()
         pygame.display.update()
