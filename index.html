@@ -1,0 +1,102 @@
+import pygame
+import random
+
+# Initialize pygame
+pygame.init()
+
+# Set up display
+WIDTH, HEIGHT = 800, 600
+screen = pygame.display.set_mode((WIDTH, HEIGHT))
+pygame.display.set_caption('The Fading Relationship')
+
+# Colors
+WHITE = (255, 255, 255)
+RED = (255, 0, 0)
+BLACK = (0, 0, 0)
+
+# Fonts
+font = pygame.font.SysFont('Arial', 30)
+
+# Game variables
+player_width = 50
+player_height = 50
+player_x = WIDTH // 2 - player_width // 2
+player_y = HEIGHT - player_height - 10
+player_speed = 5
+
+falling_objects = []
+object_speed = 5
+game_over = False
+score = 0
+
+# Set up clock for frame rate
+clock = pygame.time.Clock()
+
+# Function to draw the player
+def draw_player(x, y):
+    pygame.draw.rect(screen, RED, (x, y, player_width, player_height))
+
+# Function to draw falling objects
+def draw_falling_objects(objects):
+    for obj in objects:
+        pygame.draw.circle(screen, RED, obj, 15)
+
+# Function to generate new objects
+def generate_new_object():
+    x = random.randint(50, WIDTH - 50)
+    return [x, 0]
+
+# Main game loop
+while True:
+    screen.fill(WHITE)
+
+    # Handle events
+    for event in pygame.event.get():
+        if event.type == pygame.QUIT:
+            pygame.quit()
+            quit()
+
+    # Check for key presses
+    keys = pygame.key.get_pressed()
+    if keys[pygame.K_LEFT] and player_x > 0:
+        player_x -= player_speed
+    if keys[pygame.K_RIGHT] and player_x < WIDTH - player_width:
+        player_x += player_speed
+
+    # Add new falling objects periodically
+    if random.randint(1, 100) <= 5:
+        falling_objects.append(generate_new_object())
+
+    # Move falling objects down
+    for obj in falling_objects:
+        obj[1] += object_speed
+
+    # Check for collisions with the player
+    for obj in falling_objects[:]:
+        if (obj[0] - player_x) ** 2 < (player_width // 2) ** 2 and (obj[1] - player_y) ** 2 < (player_height // 2) ** 2:
+            falling_objects.remove(obj)
+            score += 1
+        elif obj[1] > HEIGHT:
+            falling_objects.remove(obj)
+
+    # Draw everything
+    draw_player(player_x, player_y)
+    draw_falling_objects(falling_objects)
+
+    # Show score
+    score_text = font.render(f'Score: {score}', True, BLACK)
+    screen.blit(score_text, (10, 10))
+
+    # If the player has failed to catch enough objects, end the game
+    if score == 10:
+        game_over_text = font.render('Everything is slipping away...', True, BLACK)
+        screen.blit(game_over_text, (WIDTH // 2 - 200, HEIGHT // 2))
+        game_over = True
+    if game_over:
+        pygame.display.update()
+        pygame.time.wait(2000)
+        pygame.quit()
+        quit()
+
+    pygame.display.update()
+    clock.tick(60)
