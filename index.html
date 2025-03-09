@@ -11,17 +11,17 @@ pygame.display.set_caption('The Fading Relationship')
 
 # Colors
 WHITE = (255, 255, 255)
-RED = (255, 0, 0)
-BLACK = (0, 0, 0)
 DARK_RED = (139, 0, 0)
-GRAY = (169, 169, 169)
+LIGHT_GRAY = (211, 211, 211)
+BLACK = (0, 0, 0)
+FADING_COLOR = (150, 0, 0)
 
 # Fonts
 font = pygame.font.SysFont('Arial', 30)
 
 # Game variables
-player_width = 50
-player_height = 50
+player_width = 60
+player_height = 60
 player_x = WIDTH // 2 - player_width // 2
 player_y = HEIGHT - player_height - 10
 player_speed = 5
@@ -37,12 +37,12 @@ clock = pygame.time.Clock()
 
 # Function to draw the player
 def draw_player(x, y):
-    pygame.draw.rect(screen, RED, (x, y, player_width, player_height))
+    pygame.draw.rect(screen, DARK_RED, (x, y, player_width, player_height))
 
 # Function to draw falling objects
 def draw_falling_objects(objects):
     for obj in objects:
-        pygame.draw.circle(screen, RED, obj, 15)
+        pygame.draw.circle(screen, FADING_COLOR, obj, 20)
 
 # Function to generate new objects
 def generate_new_object():
@@ -51,15 +51,26 @@ def generate_new_object():
 
 # Function to draw the game over screen
 def draw_game_over():
-    game_over_text = font.render('The relationship is lost...', True, BLACK)
+    game_over_text = font.render('The relationship is lost...', True, LIGHT_GRAY)
     screen.blit(game_over_text, (WIDTH // 2 - 150, HEIGHT // 2))
-    final_message = font.render('No more chances. It’s over.', True, BLACK)
+    final_message = font.render('No more chances. It’s over.', True, LIGHT_GRAY)
     screen.blit(final_message, (WIDTH // 2 - 170, HEIGHT // 2 + 40))
+
+# Function to draw the background fading effect
+def draw_fading_background():
+    gradient = pygame.Surface((WIDTH, HEIGHT))
+    for i in range(HEIGHT):
+        color = [max(255 - i // 2, 0) for _ in range(3)]
+        pygame.draw.line(gradient, tuple(color), (0, i), (WIDTH, i))
+    screen.blit(gradient, (0, 0))
 
 # Main game loop
 while True:
     screen.fill(WHITE)
     
+    # Draw fading background
+    draw_fading_background()
+
     # Handle events
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
